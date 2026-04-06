@@ -29,12 +29,14 @@ jobs:
       - name: Initialize Termux environment
         run: |
           docker exec \
+            --user system \
             "$TERMUX_CONTAINER_NAME" \
             bash -lc "bash scripts/init_termux.sh"
 
       - name: Verify SeleniumBase and Chromium compatibility
         run: |
           docker exec \
+            --user system \
             "$TERMUX_CONTAINER_NAME" \
             bash -lc "python scripts/verify_version.py"
 

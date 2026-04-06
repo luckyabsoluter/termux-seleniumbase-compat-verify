@@ -19,11 +19,13 @@ package remains compatible with the latest installed `seleniumbase` version.
    schedule.
 2. Starts the official `termux/termux-docker:x86_64` image as a reusable
    container so the Termux state can persist across separate CI steps.
-3. Installs the latest `python` and `chromium` packages through `pkg`.
-4. Installs Python dependencies from `requirements.txt`.
-5. Runs the verification step separately to print detected Chromium and
+3. Runs the init and verify steps as the Termux `system` user so `pkg` and the
+   packaged Python environment behave like they do inside Termux.
+4. Installs the latest `python` and `chromium` packages through `pkg`.
+5. Installs Python dependencies from `requirements.txt`.
+6. Runs the verification step separately to print detected Chromium and
    ChromeDriver version details.
-6. Launches Chromium through SeleniumBase in headless mode and exits non-zero if
+7. Launches Chromium through SeleniumBase in headless mode and exits non-zero if
    startup or navigation fails.
 
 ## Local reproduction
