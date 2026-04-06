@@ -8,5 +8,4 @@ pkg update -y
 pkg install -y x11-repo
 pkg install -y python chromium
 
-python -m pip install --upgrade pip
 python -m pip install -r "${REPO_ROOT}/requirements.txt"
