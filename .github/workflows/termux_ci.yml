@@ -21,4 +21,4 @@ jobs:
             -v "$PWD:/app" \
             -w /app \
             termux/termux-docker:x86_64 \
-            bash -lc "chmod +x scripts/init_termux.sh && ./scripts/init_termux.sh && python scripts/verify_version.py"
+            bash -lc "bash scripts/init_termux.sh && python scripts/verify_version.py"
