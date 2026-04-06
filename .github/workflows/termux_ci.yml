@@ -10,8 +10,19 @@ jobs:
   verify:
     runs-on: ubuntu-latest
     timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        termux_target:
+          - image: termux/termux-docker:x86_64
+            chromium_package: chromium
+            seleniumbase_spec: seleniumbase
+    name: Verify ${{ matrix.termux_target.chromium_package }} / ${{ matrix.termux_target.seleniumbase_spec }}
     env:
+      TERMUX_IMAGE: ${{ matrix.termux_target.image }}
       TERMUX_CONTAINER_NAME: termux-seleniumbase-ci
+      CHROMIUM_PACKAGE_SPEC: ${{ matrix.termux_target.chromium_package }}
+      SELENIUMBASE_SPEC: ${{ matrix.termux_target.seleniumbase_spec }}
 
     steps:
       - name: Check out repository
@@ -23,13 +34,15 @@ jobs:
             --name "$TERMUX_CONTAINER_NAME" \
             -v "$PWD:/app" \
             -w /app \
-            termux/termux-docker:x86_64 \
+            "$TERMUX_IMAGE" \
             bash -lc "while true; do sleep 3600; done"
 
       - name: Initialize Termux environment
         run: |
           docker exec \
             --user system \
+            -e CHROMIUM_PACKAGE_SPEC="$CHROMIUM_PACKAGE_SPEC" \
+            -e SELENIUMBASE_SPEC="$SELENIUMBASE_SPEC" \
             "$TERMUX_CONTAINER_NAME" \
             bash -lc "bash scripts/init_termux.sh"
 

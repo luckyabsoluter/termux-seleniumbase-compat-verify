@@ -1,1 +1,2 @@
-seleniumbase
+# Add shared Python dependencies here when the workflow needs packages
+# beyond the matrix-selected SeleniumBase version.
