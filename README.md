@@ -17,11 +17,12 @@ package remains compatible with the latest installed `seleniumbase` version.
 
 1. Starts a GitHub Actions job on pushes, pull requests, and the configured
    schedule.
-2. Launches the official `termux/termux-docker:x86_64` image so the
-   verification runs inside a Termux userland.
+2. Starts the official `termux/termux-docker:x86_64` image as a reusable
+   container so the Termux state can persist across separate CI steps.
 3. Installs the latest `python` and `chromium` packages through `pkg`.
 4. Installs Python dependencies from `requirements.txt`.
-5. Prints detected Chromium and ChromeDriver version details.
+5. Runs the verification step separately to print detected Chromium and
+   ChromeDriver version details.
 6. Launches Chromium through SeleniumBase in headless mode and exits non-zero if
    startup or navigation fails.
 

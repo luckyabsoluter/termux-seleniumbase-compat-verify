@@ -10,15 +10,35 @@ jobs:
   verify:
     runs-on: ubuntu-latest
     timeout-minutes: 45
+    env:
+      TERMUX_CONTAINER_NAME: termux-seleniumbase-ci
 
     steps:
       - name: Check out repository
         uses: actions/checkout@v6
 
-      - name: Run verification inside Termux Docker
+      - name: Start Termux Docker container
         run: |
-          docker run --rm \
+          docker run -d \
+            --name "$TERMUX_CONTAINER_NAME" \
             -v "$PWD:/app" \
             -w /app \
             termux/termux-docker:x86_64 \
-            bash -lc "bash scripts/init_termux.sh && python scripts/verify_version.py"
+            bash -lc "while true; do sleep 3600; done"
+
+      - name: Initialize Termux environment
+        run: |
+          docker exec \
+            "$TERMUX_CONTAINER_NAME" \
+            bash -lc "bash scripts/init_termux.sh"
+
+      - name: Verify SeleniumBase and Chromium compatibility
+        run: |
+          docker exec \
+            "$TERMUX_CONTAINER_NAME" \
+            bash -lc "python scripts/verify_version.py"
+
+      - name: Remove Termux Docker container
+        if: always()
+        run: |
+          docker rm -f "$TERMUX_CONTAINER_NAME"
