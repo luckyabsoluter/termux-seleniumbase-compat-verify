@@ -29,10 +29,16 @@ def get_binary_version(binary_name):
     return binary_path, version
 
 
+def find_chromium():
+    for chromium_binary in ["chromium", "chromium-browser"]:
+        chromium_path, chromium_version = get_binary_version(chromium_binary)
+        if chromium_path:
+            break
+    return chromium_path, chromium_version
+
+
 def emit_versions():
-    chromium_path, chromium_version = get_binary_version("chromium")
-    if not chromium_path:
-        chromium_path, chromium_version = get_binary_version("chromium-browser")
+    chromium_path, chromium_version = find_chromium()
     chromedriver_path, chromedriver_version = get_binary_version("chromedriver")
 
     if not chromium_path:
