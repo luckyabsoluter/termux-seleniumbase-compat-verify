@@ -38,17 +38,9 @@ package remains compatible with the latest installed `seleniumbase` version.
 
 ## Local reproduction
 
-Run the same checks locally with Docker:
-
-```bash
-docker run --rm \
-  -v "$PWD:/app" \
-  -w /app \
-  -e CHROMIUM_PACKAGE_SPEC="chromium" \
-  -e SELENIUMBASE_SPEC="seleniumbase" \
-  termux/termux-docker:x86_64 \
-  bash -lc "rm -rf /tmp/termux-seleniumbase-compat-verify && mkdir -p /tmp/termux-seleniumbase-compat-verify && cp -a /app/. /tmp/termux-seleniumbase-compat-verify && chown -R system:system /tmp/termux-seleniumbase-compat-verify && su system -c 'cd /tmp/termux-seleniumbase-compat-verify && bash scripts/init_termux.sh && python scripts/verify_version.py'"
-```
+Local Docker reproduction commands are documented in
+[`docs/local-reproduction.md`](docs/local-reproduction.md), including both the
+direct bind-mount flow and the writable project copy flow used by CI.
 
 ## Notes
 
