@@ -58,6 +58,7 @@ def verify_seleniumbase(chromium_path):
     try:
         driver = Driver(
             browser="chrome",
+            uc=True,  # If uc=False, SeleniumBase doesn't use chromedriver correctly
             headless=True,
             binary_location=chromium_path,
         )
