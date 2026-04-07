@@ -21,16 +21,19 @@ package remains compatible with the latest installed `seleniumbase` version.
    while the current workflow still runs a single `latest` target.
 3. Starts the official `termux/termux-docker:x86_64` image as a reusable
    container so the Termux state can persist across separate CI steps.
-4. Runs the init and verify steps as the Termux `system` user so `pkg` and the
+4. Copies the checked-out project into a writable directory inside the
+   container so SeleniumBase can create `downloaded_files` inside the project
+   tree without bind-mount permission issues.
+5. Runs the init and verify steps as the Termux `system` user so `pkg` and the
    packaged Python environment behave like they do inside Termux.
-5. Installs `python` and the matrix-selected Chromium package spec through
+6. Installs `python` and the matrix-selected Chromium package spec through
    `pkg`. The current target uses the latest `chromium`.
-6. Installs shared Python dependencies from `requirements.txt` and then
+7. Installs shared Python dependencies from `requirements.txt` and then
    installs the matrix-selected SeleniumBase spec. The current target uses the
    latest `seleniumbase`.
-7. Runs the verification step separately to print detected Chromium and
+8. Runs the verification step separately to print detected Chromium and
    ChromeDriver version details.
-8. Launches Chromium through SeleniumBase in headless mode and exits non-zero if
+9. Launches Chromium through SeleniumBase in headless mode and exits non-zero if
    startup or navigation fails.
 
 ## Local reproduction
@@ -44,7 +47,7 @@ docker run --rm \
   -e CHROMIUM_PACKAGE_SPEC="chromium" \
   -e SELENIUMBASE_SPEC="seleniumbase" \
   termux/termux-docker:x86_64 \
-  bash -lc "bash scripts/init_termux.sh && python scripts/verify_version.py"
+  bash -lc "rm -rf /tmp/termux-seleniumbase-compat-verify && mkdir -p /tmp/termux-seleniumbase-compat-verify && cp -a /app/. /tmp/termux-seleniumbase-compat-verify && chown -R system:system /tmp/termux-seleniumbase-compat-verify && su system -c 'cd /tmp/termux-seleniumbase-compat-verify && bash scripts/init_termux.sh && python scripts/verify_version.py'"
 ```
 
 ## Notes

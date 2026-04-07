@@ -21,6 +21,7 @@ jobs:
     env:
       TERMUX_IMAGE: ${{ matrix.termux_target.image }}
       TERMUX_CONTAINER_NAME: termux-seleniumbase-ci
+      TERMUX_PROJECT_DIR: /tmp/termux-seleniumbase-compat-verify
       CHROMIUM_PACKAGE_SPEC: ${{ matrix.termux_target.chromium_package }}
       SELENIUMBASE_SPEC: ${{ matrix.termux_target.seleniumbase_spec }}
 
@@ -37,10 +38,17 @@ jobs:
             "$TERMUX_IMAGE" \
             bash -lc "while true; do sleep 3600; done"
 
+      - name: Prepare writable project copy
+        run: |
+          docker exec \
+            "$TERMUX_CONTAINER_NAME" \
+            bash -lc "rm -rf \"$TERMUX_PROJECT_DIR\" && mkdir -p \"$TERMUX_PROJECT_DIR\" && cp -a /app/. \"$TERMUX_PROJECT_DIR\" && chown -R system:system \"$TERMUX_PROJECT_DIR\""
+
       - name: Initialize Termux environment
         run: |
           docker exec \
             --user system \
+            -w "$TERMUX_PROJECT_DIR" \
             -e CHROMIUM_PACKAGE_SPEC="$CHROMIUM_PACKAGE_SPEC" \
             -e SELENIUMBASE_SPEC="$SELENIUMBASE_SPEC" \
             "$TERMUX_CONTAINER_NAME" \
@@ -50,6 +58,7 @@ jobs:
         run: |
           docker exec \
             --user system \
+            -w "$TERMUX_PROJECT_DIR" \
             "$TERMUX_CONTAINER_NAME" \
             bash -lc "python scripts/verify_version.py"
 
