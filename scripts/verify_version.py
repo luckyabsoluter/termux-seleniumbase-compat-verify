@@ -3,6 +3,11 @@ import shutil
 import subprocess
 import sys
 
+
+if sys.platform == "android":
+    print("Android platform detected. Changing platform to 'linux' for SeleniumBase compatibility.")
+    sys.platform = "linux"
+# Change the platform to 'linux' before importing SeleniumBase
 from seleniumbase import Driver
 
 
