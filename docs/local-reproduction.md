@@ -8,6 +8,10 @@ Docker environment uses a different CPU architecture, replace that tag with the
 matching Termux Docker image tag for your system, such as
 `termux/termux-docker:aarch64`.
 
+For an interactive local workflow that keeps the container running and lets you
+inspect or modify the Termux environment interactively, see
+[`docs/local-interactive-workflow.md`](local-interactive-workflow.md).
+
 ## Direct bind mount
 
 This is the simpler local flow. It mounts the current project into `/app` and
