@@ -3,12 +3,7 @@ import shutil
 import subprocess
 import sys
 
-
-if sys.platform == "android":
-    print("Android platform detected. Changing platform to 'linux' for SeleniumBase compatibility.")
-    sys.platform = "linux"
-# Change the platform to 'linux' before importing SeleniumBase
-from seleniumbase import Driver
+from seleniumbase_runner import run_seleniumbase_check
 
 
 def run_command(command):
@@ -59,25 +54,10 @@ def emit_versions():
     return chromium_path
 
 
-def verify_seleniumbase(chromium_path):
-    driver = None
+if __name__ == "__main__":
+    chromium_binary = emit_versions()
     try:
-        driver = Driver(
-            browser="chrome",
-            uc=True,  # If uc=False, SeleniumBase doesn't use chromedriver correctly
-            headless=True,
-            binary_location=chromium_path,
-        )
-        driver.get("https://github.com/")
-        print(f"Loaded title: {driver.title}")
+        run_seleniumbase_check(chromium_binary)
     except Exception as exc:
         print(f"SeleniumBase verification failed: {exc}", file=sys.stderr)
         sys.exit(1)
-    finally:
-        if driver is not None:
-            driver.quit()
-
-
-if __name__ == "__main__":
-    chromium_binary = emit_versions()
-    verify_seleniumbase(chromium_binary)
