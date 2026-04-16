@@ -3,6 +3,7 @@ import shutil
 import subprocess
 import sys
 
+from selenium_runner import run_selenium_check
 from seleniumbase_runner import run_seleniumbase_check
 
 
@@ -51,13 +52,23 @@ def emit_versions():
             indent=2,
         )
     )
-    return chromium_path
+    return chromium_path, chromedriver_path
 
 
 if __name__ == "__main__":
-    chromium_binary = emit_versions()
+    chromium_binary, chromedriver_binary = emit_versions()
     try:
         run_seleniumbase_check(chromium_binary)
     except Exception as exc:
         print(f"SeleniumBase verification failed: {exc}", file=sys.stderr)
+        sys.exit(1)
+
+    if not chromedriver_binary:
+        print("Chromedriver binary was not found in PATH.", file=sys.stderr)
+        sys.exit(1)
+
+    try:
+        run_selenium_check(chromium_binary, chromedriver_binary)
+    except Exception as exc:
+        print(f"Selenium verification failed: {exc}", file=sys.stderr)
         sys.exit(1)

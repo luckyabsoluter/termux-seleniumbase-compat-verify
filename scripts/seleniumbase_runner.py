@@ -19,7 +19,7 @@ def run_seleniumbase_check(chromium_path):
             binary_location=chromium_path,
         )
         driver.get("https://github.com/")
-        print(f"Loaded title: {driver.title}")
+        print(f"SeleniumBase loaded title: {driver.title}")
     finally:
         if driver is not None:
             driver.quit()

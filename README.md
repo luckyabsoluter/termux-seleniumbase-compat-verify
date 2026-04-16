@@ -1,7 +1,8 @@
 # termux-seleniumbase-compat-verify
 
 This repository continuously verifies whether the current Termux `chromium`
-package remains compatible with the latest installed `seleniumbase` version.
+package can be launched both through the latest installed `seleniumbase`
+version and through a direct `selenium` WebDriver path.
 
 ## Layout
 
@@ -10,6 +11,8 @@ package remains compatible with the latest installed `seleniumbase` version.
 ├── .github/workflows/termux_ci.yml
 ├── requirements.txt
 ├── scripts/init_termux.sh
+├── scripts/selenium_runner.py
+├── scripts/seleniumbase_runner.py
 └── scripts/verify_version.py
 ```
 
@@ -35,6 +38,9 @@ package remains compatible with the latest installed `seleniumbase` version.
    ChromeDriver version details.
 9. Launches Chromium through SeleniumBase in headless mode and exits non-zero if
    startup or navigation fails.
+10. Launches Chromium through `selenium.webdriver.Chrome` with the detected
+    `chromedriver` binary and exits non-zero if the direct Selenium startup or
+    navigation fails.
 
 ## Local reproduction
 
