@@ -47,20 +47,18 @@ jobs:
       - name: Initialize Termux environment
         run: |
           docker exec \
-            --user system \
             -w "$TERMUX_PROJECT_DIR" \
             -e CHROMIUM_PACKAGE_SPEC="$CHROMIUM_PACKAGE_SPEC" \
             -e SELENIUMBASE_SPEC="$SELENIUMBASE_SPEC" \
             "$TERMUX_CONTAINER_NAME" \
-            bash -lc "bash scripts/init_termux.sh"
+            /entrypoint.sh bash -lc "bash scripts/init_termux.sh"
 
       - name: Verify SeleniumBase and Chromium compatibility
         run: |
           docker exec \
-            --user system \
             -w "$TERMUX_PROJECT_DIR" \
             "$TERMUX_CONTAINER_NAME" \
-            bash -lc "python scripts/verify_version.py"
+            /entrypoint.sh bash -lc "python scripts/verify_version.py"
 
       - name: Remove Termux Docker container
         if: always()
