@@ -21,7 +21,9 @@ jobs:
     env:
       TERMUX_IMAGE: ${{ matrix.termux_target.image }}
       TERMUX_CONTAINER_NAME: termux-seleniumbase-ci
-      TERMUX_PROJECT_DIR: /tmp/termux-seleniumbase-compat-verify
+      TERMUX_PROJECT_DIR: /data/termux-seleniumbase-compat-verify
+      TERMUX_ARTIFACT_DIR: /data/termux-seleniumbase-compat-verify/artifacts
+      HOST_ARTIFACT_DIR: artifacts
       CHROMIUM_PACKAGE_SPEC: ${{ matrix.termux_target.chromium_package }}
       SELENIUMBASE_SPEC: ${{ matrix.termux_target.seleniumbase_spec }}
 
@@ -50,15 +52,44 @@ jobs:
             -w "$TERMUX_PROJECT_DIR" \
             -e CHROMIUM_PACKAGE_SPEC="$CHROMIUM_PACKAGE_SPEC" \
             -e SELENIUMBASE_SPEC="$SELENIUMBASE_SPEC" \
+            -e TERMUX_ARTIFACT_DIR="$TERMUX_ARTIFACT_DIR" \
             "$TERMUX_CONTAINER_NAME" \
-            /entrypoint.sh bash -lc "bash scripts/init_termux.sh"
+            /entrypoint.sh bash -lc 'mkdir -p "$TERMUX_ARTIFACT_DIR"; bash scripts/init_termux.sh'
 
       - name: Verify SeleniumBase and Chromium compatibility
         run: |
           docker exec \
             -w "$TERMUX_PROJECT_DIR" \
+            -e TERMUX_ARTIFACT_DIR="$TERMUX_ARTIFACT_DIR" \
             "$TERMUX_CONTAINER_NAME" \
-            /entrypoint.sh bash -lc "python scripts/verify_version.py"
+            /entrypoint.sh bash -lc 'mkdir -p "$TERMUX_ARTIFACT_DIR"; python scripts/verify_version.py'
+
+      - name: Collect diagnostics
+        if: always()
+        run: |
+          if docker ps -a --format '{{.Names}}' | grep -Fxq "$TERMUX_CONTAINER_NAME"; then
+            docker exec \
+              -w "$TERMUX_PROJECT_DIR" \
+              -e TERMUX_ARTIFACT_DIR="$TERMUX_ARTIFACT_DIR" \
+              "$TERMUX_CONTAINER_NAME" \
+              /entrypoint.sh bash -lc 'mkdir -p "$TERMUX_ARTIFACT_DIR"; python scripts/collect_env_snapshot.py --output "$TERMUX_ARTIFACT_DIR/env-snapshot.json" || true'
+          fi
+
+      - name: Copy diagnostics artifacts
+        if: always()
+        run: |
+          mkdir -p "$HOST_ARTIFACT_DIR"
+          if docker ps -a --format '{{.Names}}' | grep -Fxq "$TERMUX_CONTAINER_NAME"; then
+            docker cp "$TERMUX_CONTAINER_NAME:$TERMUX_ARTIFACT_DIR/." "$HOST_ARTIFACT_DIR/" || true
+          fi
+
+      - name: Upload diagnostics artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: termux-diagnostics-${{ matrix.termux_target.chromium_package }}-${{ matrix.termux_target.seleniumbase_spec }}
+          path: ${{ env.HOST_ARTIFACT_DIR }}
+          if-no-files-found: warn
 
       - name: Remove Termux Docker container
         if: always()

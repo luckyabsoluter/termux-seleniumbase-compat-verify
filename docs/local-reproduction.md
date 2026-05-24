@@ -15,7 +15,8 @@ inspect or modify the Termux environment interactively, see
 ## Direct bind mount
 
 This is the simpler local flow. It mounts the current project into `/app` and
-runs the verification directly from that path.
+runs the verification directly from that path. Diagnostics are written to the
+local `artifacts` directory.
 
 ```bash
 docker run --rm \
@@ -23,8 +24,9 @@ docker run --rm \
   -w /app \
   -e CHROMIUM_PACKAGE_SPEC="chromium" \
   -e SELENIUMBASE_SPEC="seleniumbase" \
+  -e TERMUX_ARTIFACT_DIR="/app/artifacts" \
   termux/termux-docker:x86_64 \
-  bash -lc "bash scripts/init_termux.sh && python scripts/verify_version.py"
+  bash -lc 'mkdir -p "$TERMUX_ARTIFACT_DIR"; bash scripts/init_termux.sh && python scripts/verify_version.py; status=$?; python scripts/collect_env_snapshot.py --output "$TERMUX_ARTIFACT_DIR/env-snapshot.json" || true; exit $status'
 ```
 
 ## Writable project copy
@@ -41,5 +43,25 @@ docker run --rm \
   -e CHROMIUM_PACKAGE_SPEC="chromium" \
   -e SELENIUMBASE_SPEC="seleniumbase" \
   termux/termux-docker:x86_64 \
-  bash -lc "rm -rf /tmp/termux-seleniumbase-compat-verify && mkdir -p /tmp/termux-seleniumbase-compat-verify && cp -a /app/. /tmp/termux-seleniumbase-compat-verify && chown -R system:system /tmp/termux-seleniumbase-compat-verify && su system -c 'cd /tmp/termux-seleniumbase-compat-verify && bash scripts/init_termux.sh && python scripts/verify_version.py'"
+  bash -lc 'project_dir="/data/termux-seleniumbase-compat-verify"; artifact_dir="$project_dir/artifacts"; rm -rf "$project_dir"; mkdir -p "$project_dir"; cp -a /app/. "$project_dir"; chown -R system:system "$project_dir"; /entrypoint.sh bash -lc "cd /data/termux-seleniumbase-compat-verify && export TERMUX_ARTIFACT_DIR=/data/termux-seleniumbase-compat-verify/artifacts && mkdir -p \"\$TERMUX_ARTIFACT_DIR\"; bash scripts/init_termux.sh && python scripts/verify_version.py"; status=$?; /entrypoint.sh bash -lc "cd /data/termux-seleniumbase-compat-verify && export TERMUX_ARTIFACT_DIR=/data/termux-seleniumbase-compat-verify/artifacts && python scripts/collect_env_snapshot.py --output \"\$TERMUX_ARTIFACT_DIR/env-snapshot.json\" || true"; cp -a "$artifact_dir" /app/artifacts || true; exit $status'
 ```
+
+## Artifact inspection
+
+After either flow, inspect the generated artifacts from the local repository:
+
+```bash
+ls -la artifacts
+cat artifacts/termux-native-summary.json
+cat artifacts/env-snapshot.json
+```
+
+The most useful dependency files are:
+
+- `artifacts/pip-resolve-report.json`
+- `artifacts/termux-native-packages.txt`
+- `artifacts/termux-native-summary.json`
+
+The most useful runtime files are:
+
+- `artifacts/env-snapshot.json`

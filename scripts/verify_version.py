@@ -1,10 +1,14 @@
 import json
+from importlib import metadata
 import shutil
 import subprocess
 import sys
 
 from selenium_runner import run_selenium_check
 from seleniumbase_runner import run_seleniumbase_check
+
+
+PACKAGE_NAMES = ["seleniumbase", "selenium", "psutil"]
 
 
 def run_command(command):
@@ -33,6 +37,16 @@ def find_chromium():
     return chromium_path, chromium_version
 
 
+def get_package_versions():
+    versions = {}
+    for package_name in PACKAGE_NAMES:
+        try:
+            versions[package_name] = metadata.version(package_name)
+        except metadata.PackageNotFoundError:
+            versions[package_name] = None
+    return versions
+
+
 def emit_versions():
     chromium_path, chromium_version = find_chromium()
     chromedriver_path, chromedriver_version = get_binary_version("chromedriver")
@@ -48,6 +62,7 @@ def emit_versions():
                 "chromium_version": chromium_version,
                 "chromedriver_path": chromedriver_path,
                 "chromedriver_version": chromedriver_version,
+                "package_versions": get_package_versions(),
             },
             indent=2,
         )

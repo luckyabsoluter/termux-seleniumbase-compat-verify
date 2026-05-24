@@ -1,0 +1,17 @@
+# Termux-native Python package replacements.
+#
+# Policy:
+# - Keep SeleniumBase on the latest available release by default.
+# - Do not pin SeleniumBase just to bypass a Termux/Android dependency issue.
+# - Add native replacement rules here when PyPI packages fail on Android but
+#   Termux provides a maintained package.
+
+[packages.psutil]
+# termux/termux-packages#28770
+# Python 3.13 + PyPI psutil 7.2.2 can fail during wheel preparation on Android:
+# "platform android is not supported".
+termux_packages = ["python-psutil"]
+verify_imports = ["psutil"]
+policy = "install_with_pkg_before_pip"
+reason = "PyPI psutil source distribution rejects Android, while Termux provides a native package."
+references = ["termux/termux-packages#28770"]

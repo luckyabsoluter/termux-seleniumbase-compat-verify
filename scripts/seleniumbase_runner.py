@@ -1,11 +1,9 @@
-import sys
+from termux_platform_shim import apply_seleniumbase_platform_shim
 
 
-if sys.platform == "android":
-    print("Android platform detected. Changing platform to 'linux' for SeleniumBase compatibility.")
-    sys.platform = "linux"
+apply_seleniumbase_platform_shim()
 
-# Import after platform adjustment so SeleniumBase resolves correctly on Termux.
+# Import after platform shim so SeleniumBase resolves correctly on Termux.
 from seleniumbase import Driver
 
 
