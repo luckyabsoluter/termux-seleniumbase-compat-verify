@@ -73,8 +73,10 @@ manifest with:
 
 1. Starts a GitHub Actions job on pushes, pull requests, and the configured
    schedule.
-2. Uses matrix targets for both raw upstream behavior and the Termux-native
-   compatibility path.
+2. Uses `unmodified-seleniumbase` and
+   `seleniumbase-with-termux-python-psutil` matrix targets to separate the
+   unmodified SeleniumBase install path from the Termux `python-psutil`
+   replacement path.
 3. Uses the matrix-selected Termux Docker image, Chromium package spec,
    SeleniumBase package spec, and compatibility mode.
 4. Copies the checked-out project into a writable `/data` directory inside
@@ -82,14 +84,16 @@ manifest with:
 5. Runs Termux commands through the image entrypoint.
 6. Installs Termux `python`, `x11-repo`, and the matrix-selected Chromium
    package through `pkg`.
-7. In `upstream` mode, installs the selected SeleniumBase spec without
-   Termux-native dependency replacement or the SeleniumBase platform shim.
-8. In `termux_native` mode, generates a pip dry-run resolver report for the
-   selected SeleniumBase spec.
-9. In `termux_native` mode, resolves known Termux-native replacements from
+7. The `unmodified-seleniumbase` target installs the selected SeleniumBase spec
+   without Termux-native dependency replacement or the SeleniumBase platform
+   shim.
+8. The `seleniumbase-with-termux-python-psutil` target generates a pip dry-run
+   resolver report for the selected SeleniumBase spec.
+9. The `seleniumbase-with-termux-python-psutil` target resolves the `psutil`
+   replacement from
    `compat/termux_native_packages.toml`.
-10. In `termux_native` mode, installs the resolved Termux-native packages and
-    verifies their Python imports.
+10. The `seleniumbase-with-termux-python-psutil` target installs
+    `python-psutil` through Termux and verifies the `psutil` Python import.
 11. Installs shared Python dependencies from `requirements.txt`.
 12. Installs the selected SeleniumBase spec with pip dependency resolution still
     enabled.
@@ -110,9 +114,10 @@ CI uploads the `artifacts` directory after each run. Important files include:
 - `termux-native-summary.json`
 - `env-snapshot.json`
 
-The resolver and Termux-native package artifacts are produced by
-`termux_native` matrix targets. The `upstream` target is intentionally plain and
-may only contain environment diagnostics if installation fails first.
+The resolver and Termux-native package artifacts are produced by the
+`seleniumbase-with-termux-python-psutil` target. The
+`unmodified-seleniumbase` target is intentionally unmodified and may only
+contain environment diagnostics if installation fails first.
 
 ## Runtime Platform Shim
 

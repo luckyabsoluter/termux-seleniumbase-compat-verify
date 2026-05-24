@@ -5,7 +5,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 CHROMIUM_PACKAGE_SPEC="${CHROMIUM_PACKAGE_SPEC:-chromium}"
 SELENIUMBASE_SPEC="${SELENIUMBASE_SPEC:-seleniumbase}"
-TERMUX_COMPAT_MODE="${TERMUX_COMPAT_MODE:-termux_native}"
+TERMUX_COMPAT_MODE="${TERMUX_COMPAT_MODE:-seleniumbase-with-termux-python-psutil}"
 TERMUX_ARTIFACT_DIR="${TERMUX_ARTIFACT_DIR:-${REPO_ROOT}/artifacts}"
 PIP_REPORT_PATH="${PIP_REPORT_PATH:-${TERMUX_ARTIFACT_DIR}/pip-resolve-report.json}"
 TERMUX_NATIVE_PACKAGES_PATH="${TERMUX_NATIVE_PACKAGES_PATH:-${TERMUX_ARTIFACT_DIR}/termux-native-packages.txt}"
@@ -18,14 +18,14 @@ pkg install -y python "${CHROMIUM_PACKAGE_SPEC}"
 
 mkdir -p "${TERMUX_ARTIFACT_DIR}"
 
-if [[ "${TERMUX_COMPAT_MODE}" == "upstream" ]]; then
+if [[ "${TERMUX_COMPAT_MODE}" == "unmodified-seleniumbase" ]]; then
   python -m pip install -r "${REPO_ROOT}/requirements.txt"
   python -m pip install --upgrade --upgrade-strategy only-if-needed "${SELENIUMBASE_SPEC}"
   python -m pip check
   exit 0
 fi
 
-if [[ "${TERMUX_COMPAT_MODE}" != "termux_native" ]]; then
+if [[ "${TERMUX_COMPAT_MODE}" != "seleniumbase-with-termux-python-psutil" ]]; then
   echo "Unsupported TERMUX_COMPAT_MODE: ${TERMUX_COMPAT_MODE}" >&2
   exit 2
 fi

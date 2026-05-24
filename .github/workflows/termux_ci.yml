@@ -17,17 +17,19 @@ jobs:
           - image: termux/termux-docker:x86_64
             chromium_package: chromium
             seleniumbase_spec: seleniumbase
-            compatibility_mode: upstream
+            ci_name: unmodified-seleniumbase
+            compatibility_mode: unmodified-seleniumbase
             disable_seleniumbase_platform_shim: "1"
           - image: termux/termux-docker:x86_64
             chromium_package: chromium
             seleniumbase_spec: seleniumbase
-            compatibility_mode: termux_native
+            ci_name: seleniumbase-with-termux-python-psutil
+            compatibility_mode: seleniumbase-with-termux-python-psutil
             disable_seleniumbase_platform_shim: "0"
-    name: Verify ${{ matrix.termux_target.compatibility_mode }} / ${{ matrix.termux_target.chromium_package }} / ${{ matrix.termux_target.seleniumbase_spec }}
+    name: Verify ${{ matrix.termux_target.ci_name }} / ${{ matrix.termux_target.chromium_package }} / ${{ matrix.termux_target.seleniumbase_spec }}
     env:
       TERMUX_IMAGE: ${{ matrix.termux_target.image }}
-      TERMUX_CONTAINER_NAME: termux-seleniumbase-ci-${{ matrix.termux_target.compatibility_mode }}-${{ matrix.termux_target.chromium_package }}-${{ matrix.termux_target.seleniumbase_spec }}
+      TERMUX_CONTAINER_NAME: termux-seleniumbase-ci-${{ matrix.termux_target.ci_name }}-${{ matrix.termux_target.chromium_package }}-${{ matrix.termux_target.seleniumbase_spec }}
       TERMUX_PROJECT_DIR: /data/termux-seleniumbase-compat-verify
       TERMUX_ARTIFACT_DIR: /data/termux-seleniumbase-compat-verify/artifacts
       HOST_ARTIFACT_DIR: artifacts
@@ -101,7 +103,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: termux-diagnostics-${{ matrix.termux_target.compatibility_mode }}-${{ matrix.termux_target.chromium_package }}-${{ matrix.termux_target.seleniumbase_spec }}
+          name: termux-diagnostics-${{ matrix.termux_target.ci_name }}-${{ matrix.termux_target.chromium_package }}-${{ matrix.termux_target.seleniumbase_spec }}
           path: ${{ env.HOST_ARTIFACT_DIR }}
           if-no-files-found: warn
 
