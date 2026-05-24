@@ -27,7 +27,7 @@ jobs:
     name: Verify ${{ matrix.termux_target.compatibility_mode }} / ${{ matrix.termux_target.chromium_package }} / ${{ matrix.termux_target.seleniumbase_spec }}
     env:
       TERMUX_IMAGE: ${{ matrix.termux_target.image }}
-      TERMUX_CONTAINER_NAME: termux-seleniumbase-ci
+      TERMUX_CONTAINER_NAME: termux-seleniumbase-ci-${{ matrix.termux_target.compatibility_mode }}-${{ matrix.termux_target.chromium_package }}-${{ matrix.termux_target.seleniumbase_spec }}
       TERMUX_PROJECT_DIR: /data/termux-seleniumbase-compat-verify
       TERMUX_ARTIFACT_DIR: /data/termux-seleniumbase-compat-verify/artifacts
       HOST_ARTIFACT_DIR: artifacts
