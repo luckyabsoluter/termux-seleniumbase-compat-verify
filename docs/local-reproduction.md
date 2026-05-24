@@ -24,6 +24,7 @@ docker run --rm \
   -w /app \
   -e CHROMIUM_PACKAGE_SPEC="chromium" \
   -e SELENIUMBASE_SPEC="seleniumbase" \
+  -e TERMUX_COMPAT_MODE="termux_native" \
   -e TERMUX_ARTIFACT_DIR="/app/artifacts" \
   termux/termux-docker:x86_64 \
   bash -lc 'mkdir -p "$TERMUX_ARTIFACT_DIR"; bash scripts/init_termux.sh && python scripts/verify_version.py; status=$?; python scripts/collect_env_snapshot.py --output "$TERMUX_ARTIFACT_DIR/env-snapshot.json" || true; exit $status'
@@ -42,9 +43,15 @@ docker run --rm \
   -w /app \
   -e CHROMIUM_PACKAGE_SPEC="chromium" \
   -e SELENIUMBASE_SPEC="seleniumbase" \
+  -e TERMUX_COMPAT_MODE="termux_native" \
   termux/termux-docker:x86_64 \
-  bash -lc 'project_dir="/data/termux-seleniumbase-compat-verify"; artifact_dir="$project_dir/artifacts"; rm -rf "$project_dir"; mkdir -p "$project_dir"; cp -a /app/. "$project_dir"; chown -R system:system "$project_dir"; /entrypoint.sh bash -lc "cd /data/termux-seleniumbase-compat-verify && export TERMUX_ARTIFACT_DIR=/data/termux-seleniumbase-compat-verify/artifacts && mkdir -p \"\$TERMUX_ARTIFACT_DIR\"; bash scripts/init_termux.sh && python scripts/verify_version.py"; status=$?; /entrypoint.sh bash -lc "cd /data/termux-seleniumbase-compat-verify && export TERMUX_ARTIFACT_DIR=/data/termux-seleniumbase-compat-verify/artifacts && python scripts/collect_env_snapshot.py --output \"\$TERMUX_ARTIFACT_DIR/env-snapshot.json\" || true"; cp -a "$artifact_dir" /app/artifacts || true; exit $status'
+  bash -lc 'project_dir="/data/termux-seleniumbase-compat-verify"; artifact_dir="$project_dir/artifacts"; rm -rf "$project_dir"; mkdir -p "$project_dir"; cp -a /app/. "$project_dir"; chown -R system:system "$project_dir"; /entrypoint.sh bash -lc "cd /data/termux-seleniumbase-compat-verify && export TERMUX_COMPAT_MODE=termux_native && export TERMUX_ARTIFACT_DIR=/data/termux-seleniumbase-compat-verify/artifacts && mkdir -p \"\$TERMUX_ARTIFACT_DIR\"; bash scripts/init_termux.sh && python scripts/verify_version.py"; status=$?; /entrypoint.sh bash -lc "cd /data/termux-seleniumbase-compat-verify && export TERMUX_COMPAT_MODE=termux_native && export TERMUX_ARTIFACT_DIR=/data/termux-seleniumbase-compat-verify/artifacts && python scripts/collect_env_snapshot.py --output \"\$TERMUX_ARTIFACT_DIR/env-snapshot.json\" || true"; cp -a "$artifact_dir" /app/artifacts || true; exit $status'
 ```
+
+Set `TERMUX_COMPAT_MODE=upstream` and
+`TERMUX_DISABLE_SELENIUMBASE_PLATFORM_SHIM=1` to reproduce the plain upstream
+matrix target without Termux-native dependency replacement or the SeleniumBase
+platform shim.
 
 ## Artifact inspection
 
@@ -52,8 +59,8 @@ After either flow, inspect the generated artifacts from the local repository:
 
 ```bash
 ls -la artifacts
-cat artifacts/termux-native-summary.json
 cat artifacts/env-snapshot.json
+test -f artifacts/termux-native-summary.json && cat artifacts/termux-native-summary.json
 ```
 
 The most useful dependency files are:

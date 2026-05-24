@@ -73,27 +73,32 @@ manifest with:
 
 1. Starts a GitHub Actions job on pushes, pull requests, and the configured
    schedule.
-2. Uses the matrix-selected Termux Docker image, Chromium package spec, and
-   SeleniumBase package spec.
-3. Copies the checked-out project into a writable `/data` directory inside
+2. Uses matrix targets for both raw upstream behavior and the Termux-native
+   compatibility path.
+3. Uses the matrix-selected Termux Docker image, Chromium package spec,
+   SeleniumBase package spec, and compatibility mode.
+4. Copies the checked-out project into a writable `/data` directory inside
    the container.
-4. Runs Termux commands through the image entrypoint.
-5. Installs Termux `python`, `x11-repo`, and the matrix-selected Chromium
+5. Runs Termux commands through the image entrypoint.
+6. Installs Termux `python`, `x11-repo`, and the matrix-selected Chromium
    package through `pkg`.
-6. Generates a pip dry-run resolver report for the selected SeleniumBase spec.
-7. Resolves known Termux-native replacements from
+7. In `upstream` mode, installs the selected SeleniumBase spec without
+   Termux-native dependency replacement or the SeleniumBase platform shim.
+8. In `termux_native` mode, generates a pip dry-run resolver report for the
+   selected SeleniumBase spec.
+9. In `termux_native` mode, resolves known Termux-native replacements from
    `compat/termux_native_packages.toml`.
-8. Installs the resolved Termux-native packages and verifies their Python
-   imports.
-9. Installs shared Python dependencies from `requirements.txt`.
-10. Installs the selected SeleniumBase spec with pip dependency resolution still
+10. In `termux_native` mode, installs the resolved Termux-native packages and
+    verifies their Python imports.
+11. Installs shared Python dependencies from `requirements.txt`.
+12. Installs the selected SeleniumBase spec with pip dependency resolution still
     enabled.
-11. Runs `python -m pip check`.
-12. Prints Chromium, ChromeDriver, SeleniumBase, Selenium, and psutil version
+13. Runs `python -m pip check`.
+14. Prints Chromium, ChromeDriver, SeleniumBase, Selenium, and psutil version
     details.
-13. Launches Chromium through SeleniumBase and through direct Selenium
+15. Launches Chromium through SeleniumBase and through direct Selenium
     WebDriver paths.
-14. Collects diagnostics artifacts even when initialization or verification
+16. Collects diagnostics artifacts even when initialization or verification
     fails.
 
 ## Diagnostics Artifacts
@@ -104,6 +109,10 @@ CI uploads the `artifacts` directory after each run. Important files include:
 - `termux-native-packages.txt`
 - `termux-native-summary.json`
 - `env-snapshot.json`
+
+The resolver and Termux-native package artifacts are produced by
+`termux_native` matrix targets. The `upstream` target is intentionally plain and
+may only contain environment diagnostics if installation fails first.
 
 ## Runtime Platform Shim
 
