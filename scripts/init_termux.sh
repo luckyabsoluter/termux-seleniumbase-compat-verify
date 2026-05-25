@@ -30,11 +30,8 @@ if [[ "${TERMUX_COMPAT_MODE}" != "seleniumbase-with-termux-python-psutil" ]]; th
   exit 2
 fi
 
-if bash "${SCRIPT_DIR}/create_pip_report.sh"; then
-  python "${SCRIPT_DIR}/resolve_termux_native_deps.py"
-else
-  python "${SCRIPT_DIR}/resolve_termux_native_deps.py" --all-manifest-rules
-fi
+bash "${SCRIPT_DIR}/create_pip_report.sh"
+python "${SCRIPT_DIR}/resolve_termux_native_deps.py"
 
 if [[ -s "${TERMUX_NATIVE_PACKAGES_PATH}" ]]; then
   mapfile -t TERMUX_NATIVE_PACKAGES < "${TERMUX_NATIVE_PACKAGES_PATH}"

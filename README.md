@@ -52,11 +52,10 @@ can reject Android, while Termux provides a maintained `python-psutil` package.
 The manifest rule maps `psutil` to `python-psutil` and declares the Python
 imports that must be verified after `pkg install`.
 
-The normal path uses a pip dry-run resolver report. If pip fails before it can
-write that report because a known native package rejects Android during
-metadata preparation, the resolver falls back to the manifest rules with
-`install_with_pkg_before_pip`. After installing the native Termux package, the
-init script regenerates an installed-aware pip report.
+The normal path requires a pip dry-run resolver report. If pip fails before it
+can write that report, initialization stops instead of applying manifest rules
+without resolver evidence. After installing any matched native Termux package,
+the init script regenerates an installed-aware pip report.
 
 When a future dependency fails only on Termux/Android, add a rule to the
 manifest with:

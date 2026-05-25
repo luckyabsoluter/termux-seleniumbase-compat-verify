@@ -18,9 +18,7 @@ def default_artifact_dir(repo_root):
     return Path(os.environ.get("TERMUX_ARTIFACT_DIR", repo_root / "artifacts"))
 
 
-def load_json_if_present(path):
-    if not path.exists():
-        return None
+def load_json(path):
     with path.open("rb") as report_file:
         return json.load(report_file)
 
@@ -86,19 +84,8 @@ def add_match(matched_packages, termux_packages, matched_rule):
         append_unique(termux_packages, matched_rule["termux_packages"])
 
 
-def resolve_all_manifest_rules(rules, matched_packages, termux_packages):
-    for rule in rules.values():
-        add_match(
-            matched_packages,
-            termux_packages,
-            make_match(rule, "manifest_fallback"),
-        )
-
-
 def resolve_from_report(report, rules, matched_packages, termux_packages):
     resolved_packages = []
-    if not report:
-        return resolved_packages
 
     for install_item in report.get("install", []):
         package = package_from_install_item(install_item)
@@ -119,22 +106,16 @@ def resolve_from_report(report, rules, matched_packages, termux_packages):
     return resolved_packages
 
 
-def resolve_native_deps(report, manifest, all_manifest_rules=False):
+def resolve_native_deps(report, manifest):
     rules = build_rule_index(manifest)
     matched_packages = []
     termux_packages = []
     resolved_packages = resolve_from_report(report, rules, matched_packages, termux_packages)
-    manifest_fallback_used = False
-
-    if all_manifest_rules and not report:
-        resolve_all_manifest_rules(rules, matched_packages, termux_packages)
-        manifest_fallback_used = True
 
     return {
         "resolved_python_packages": resolved_packages,
         "matched_packages": matched_packages,
         "termux_packages": termux_packages,
-        "manifest_fallback_used": manifest_fallback_used,
     }
 
 
@@ -162,11 +143,6 @@ def parse_args():
         "--report",
         type=Path,
         default=Path(os.environ.get("PIP_REPORT_PATH", artifact_dir / "pip-resolve-report.json")),
-    )
-    parser.add_argument(
-        "--all-manifest-rules",
-        action="store_true",
-        help="Use all manifest rules when the pip report was not created.",
     )
     parser.add_argument(
         "--manifest",
@@ -198,16 +174,12 @@ def parse_args():
 
 def main():
     args = parse_args()
-    report = load_json_if_present(args.report)
+    report = load_json(args.report)
     manifest = load_manifest(args.manifest)
-    resolved = resolve_native_deps(
-        report,
-        manifest,
-        all_manifest_rules=args.all_manifest_rules,
-    )
+    resolved = resolve_native_deps(report, manifest)
     summary = {
         "report_path": str(args.report),
-        "report_available": report is not None,
+        "report_available": True,
         "manifest_path": str(args.manifest),
         **resolved,
     }
