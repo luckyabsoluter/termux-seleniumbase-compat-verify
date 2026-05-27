@@ -58,7 +58,7 @@ jobs:
             bash -lc "rm -rf \"$TERMUX_PROJECT_DIR\" && mkdir -p \"$TERMUX_PROJECT_DIR\" && cp -a /app/. \"$TERMUX_PROJECT_DIR\" && chown -R system:system \"$TERMUX_PROJECT_DIR\""
 
       - name: Initialize Termux environment
-        run: |
+        run: |  # We can't pass environment variables with `docker exec -e`, so we pass them inline
           docker exec \
             -w "$TERMUX_PROJECT_DIR" \
             "$TERMUX_CONTAINER_NAME" \
