@@ -43,19 +43,20 @@ SeleniumBase to an older version.
 
 ## Termux-Native Replacements
 
-`compat/termux_native_packages.toml` maps Python package names from the pip
-resolver report to Termux packages that should be installed before the final
-SeleniumBase install.
+`compat/termux_native_packages.toml` maps Python package names from explicit
+compatibility targets or the pip resolver report to Termux packages that should
+be installed before the final SeleniumBase install.
 
 For example, SeleniumBase may depend on `psutil`. PyPI `psutil` source builds
 can reject Android, while Termux provides a maintained `python-psutil` package.
 The manifest rule maps `psutil` to `python-psutil` and declares the Python
 imports that must be verified after `pkg install`.
 
-The normal path requires a pip dry-run resolver report. If pip fails before it
-can write that report, initialization stops instead of applying manifest rules
-without resolver evidence. After installing any matched native Termux package,
-the init script regenerates an installed-aware pip report.
+The `seleniumbase-with-termux-python-psutil` target explicitly applies the
+`psutil` manifest rule, installs `python-psutil`, and then generates an
+installed-aware pip dry-run resolver report. Other native replacements should
+be added as explicit compatibility targets instead of applying every manifest
+rule when report generation fails.
 
 When a future dependency fails only on Termux/Android, add a rule to the
 manifest with:
@@ -86,13 +87,14 @@ manifest with:
 7. The `unmodified-seleniumbase` target installs the selected SeleniumBase spec
    without Termux-native dependency replacement or the SeleniumBase platform
    shim.
-8. The `seleniumbase-with-termux-python-psutil` target generates a pip dry-run
-   resolver report for the selected SeleniumBase spec.
-9. The `seleniumbase-with-termux-python-psutil` target resolves the `psutil`
+8. The `seleniumbase-with-termux-python-psutil` target resolves the `psutil`
    replacement from
    `compat/termux_native_packages.toml`.
-10. The `seleniumbase-with-termux-python-psutil` target installs
+9. The `seleniumbase-with-termux-python-psutil` target installs
     `python-psutil` through Termux and verifies the `psutil` Python import.
+10. The `seleniumbase-with-termux-python-psutil` target generates an
+    installed-aware pip dry-run resolver report for the selected SeleniumBase
+    spec.
 11. Installs shared Python dependencies from `requirements.txt`.
 12. Installs the selected SeleniumBase spec with pip dependency resolution still
     enabled.

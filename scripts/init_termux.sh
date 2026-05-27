@@ -30,20 +30,18 @@ if [[ "${TERMUX_COMPAT_MODE}" != "seleniumbase-with-termux-python-psutil" ]]; th
   exit 2
 fi
 
-bash "${SCRIPT_DIR}/create_pip_report.sh"
-python "${SCRIPT_DIR}/resolve_termux_native_deps.py"
+python "${SCRIPT_DIR}/resolve_termux_native_deps.py" --manifest-package psutil
 
 if [[ -s "${TERMUX_NATIVE_PACKAGES_PATH}" ]]; then
   mapfile -t TERMUX_NATIVE_PACKAGES < "${TERMUX_NATIVE_PACKAGES_PATH}"
   pkg install -y "${TERMUX_NATIVE_PACKAGES[@]}"
   python "${SCRIPT_DIR}/verify_termux_native_deps.py"
-
-  if [[ ! -s "${PIP_REPORT_PATH}" ]]; then
-    PIP_REPORT_IGNORE_INSTALLED=0 bash "${SCRIPT_DIR}/create_pip_report.sh"
-  fi
 else
   python "${SCRIPT_DIR}/verify_termux_native_deps.py"
 fi
+
+PIP_REPORT_IGNORE_INSTALLED=0 bash "${SCRIPT_DIR}/create_pip_report.sh"
+python "${SCRIPT_DIR}/resolve_termux_native_deps.py" --manifest-package psutil
 
 python -m pip install -r "${REPO_ROOT}/requirements.txt"
 python -m pip install --upgrade --upgrade-strategy only-if-needed "${SELENIUMBASE_SPEC}"

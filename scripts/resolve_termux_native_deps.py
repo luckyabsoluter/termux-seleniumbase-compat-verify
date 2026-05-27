@@ -84,8 +84,25 @@ def add_match(matched_packages, termux_packages, matched_rule):
         append_unique(termux_packages, matched_rule["termux_packages"])
 
 
+def resolve_manifest_packages(package_names, rules, matched_packages, termux_packages):
+    for package_name in package_names:
+        normalized_name = normalize_package_name(package_name)
+        rule = rules.get(normalized_name)
+        if not rule:
+            raise KeyError(package_name)
+
+        add_match(
+            matched_packages,
+            termux_packages,
+            make_match(rule, "explicit_manifest_package"),
+        )
+
+
 def resolve_from_report(report, rules, matched_packages, termux_packages):
     resolved_packages = []
+
+    if not report:
+        return resolved_packages
 
     for install_item in report.get("install", []):
         package = package_from_install_item(install_item)
@@ -106,11 +123,12 @@ def resolve_from_report(report, rules, matched_packages, termux_packages):
     return resolved_packages
 
 
-def resolve_native_deps(report, manifest):
+def resolve_native_deps(report, manifest, manifest_packages=None):
     rules = build_rule_index(manifest)
     matched_packages = []
     termux_packages = []
     resolved_packages = resolve_from_report(report, rules, matched_packages, termux_packages)
+    resolve_manifest_packages(manifest_packages or [], rules, matched_packages, termux_packages)
 
     return {
         "resolved_python_packages": resolved_packages,
@@ -150,6 +168,12 @@ def parse_args():
         default=repo_root / "compat" / "termux_native_packages.toml",
     )
     parser.add_argument(
+        "--manifest-package",
+        action="append",
+        default=[],
+        help="Resolve one named manifest package explicitly.",
+    )
+    parser.add_argument(
         "--package-list",
         type=Path,
         default=Path(
@@ -174,13 +198,21 @@ def parse_args():
 
 def main():
     args = parse_args()
-    report = load_json(args.report)
+    report_available = args.report.exists()
+    if report_available:
+        report = load_json(args.report)
+    elif args.manifest_package:
+        report = None
+    else:
+        raise FileNotFoundError(args.report)
+
     manifest = load_manifest(args.manifest)
-    resolved = resolve_native_deps(report, manifest)
+    resolved = resolve_native_deps(report, manifest, args.manifest_package)
     summary = {
         "report_path": str(args.report),
-        "report_available": True,
+        "report_available": report_available,
         "manifest_path": str(args.manifest),
+        "explicit_manifest_packages": args.manifest_package,
         **resolved,
     }
 
@@ -194,4 +226,7 @@ if __name__ == "__main__":
         main()
     except FileNotFoundError as exc:
         print(f"Required file was not found: {exc.filename}", file=sys.stderr)
+        sys.exit(1)
+    except KeyError as exc:
+        print(f"Manifest package was not found: {exc.args[0]}", file=sys.stderr)
         sys.exit(1)
