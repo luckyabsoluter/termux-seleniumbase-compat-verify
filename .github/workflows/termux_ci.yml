@@ -64,19 +64,17 @@ jobs:
             -e CHROMIUM_PACKAGE_SPEC="$CHROMIUM_PACKAGE_SPEC" \
             -e SELENIUMBASE_SPEC="$SELENIUMBASE_SPEC" \
             -e TERMUX_COMPAT_MODE="$TERMUX_COMPAT_MODE" \
-            -e TERMUX_ARTIFACT_DIR="$TERMUX_ARTIFACT_DIR" \
             "$TERMUX_CONTAINER_NAME" \
-            /entrypoint.sh bash -c 'mkdir -p "$TERMUX_ARTIFACT_DIR"; bash scripts/init_termux.sh'
+            /entrypoint.sh bash -c 'bash scripts/init_termux.sh'
 
       - name: Verify SeleniumBase and Chromium compatibility
         run: |
           docker exec \
             -w "$TERMUX_PROJECT_DIR" \
-            -e TERMUX_ARTIFACT_DIR="$TERMUX_ARTIFACT_DIR" \
             -e TERMUX_COMPAT_MODE="$TERMUX_COMPAT_MODE" \
             -e TERMUX_DISABLE_SELENIUMBASE_PLATFORM_SHIM="$TERMUX_DISABLE_SELENIUMBASE_PLATFORM_SHIM" \
             "$TERMUX_CONTAINER_NAME" \
-            /entrypoint.sh bash -c 'mkdir -p "$TERMUX_ARTIFACT_DIR"; python scripts/verify_version.py'
+            /entrypoint.sh bash -c 'python scripts/verify_version.py'
 
       - name: Collect diagnostics
         if: always()
@@ -84,11 +82,10 @@ jobs:
           if docker ps -a --format '{{.Names}}' | grep -Fxq "$TERMUX_CONTAINER_NAME"; then
             docker exec \
               -w "$TERMUX_PROJECT_DIR" \
-              -e TERMUX_ARTIFACT_DIR="$TERMUX_ARTIFACT_DIR" \
               -e TERMUX_COMPAT_MODE="$TERMUX_COMPAT_MODE" \
               -e TERMUX_DISABLE_SELENIUMBASE_PLATFORM_SHIM="$TERMUX_DISABLE_SELENIUMBASE_PLATFORM_SHIM" \
               "$TERMUX_CONTAINER_NAME" \
-              /entrypoint.sh bash -c 'mkdir -p "$TERMUX_ARTIFACT_DIR"; python scripts/collect_env_snapshot.py --output "$TERMUX_ARTIFACT_DIR/env-snapshot.json" || true'
+              /entrypoint.sh bash -c 'python scripts/collect_env_snapshot.py --output "$TERMUX_ARTIFACT_DIR/env-snapshot.json" || true'
           fi
 
       - name: Copy diagnostics artifacts
