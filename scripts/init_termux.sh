@@ -5,7 +5,10 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 CHROMIUM_PACKAGE_SPEC="${CHROMIUM_PACKAGE_SPEC:-chromium}"
 SELENIUMBASE_SPEC="${SELENIUMBASE_SPEC:-seleniumbase}"
-TERMUX_COMPAT_MODE="${TERMUX_COMPAT_MODE:-unmodified-seleniumbase}"
+if [[ -z "${TERMUX_COMPAT_MODE}" ]]; then
+  echo "TERMUX_COMPAT_MODE is not set. Please set it to one of the supported modes." >&2
+  exit 1
+fi
 TERMUX_ARTIFACT_DIR="${TERMUX_ARTIFACT_DIR:-${REPO_ROOT}/artifacts}"
 PIP_REPORT_PATH="${PIP_REPORT_PATH:-${TERMUX_ARTIFACT_DIR}/pip-resolve-report.json}"
 TERMUX_NATIVE_PACKAGES_PATH="${TERMUX_NATIVE_PACKAGES_PATH:-${TERMUX_ARTIFACT_DIR}/termux-native-packages.txt}"
