@@ -50,10 +50,13 @@ docker run -d `
 
 ```bash
 docker exec \
-  -e CHROMIUM_PACKAGE_SPEC="chromium" \
-  -e SELENIUMBASE_SPEC="seleniumbase" \
   "$container" \
-  /entrypoint.sh bash -lc "bash scripts/init_termux.sh"
+  /entrypoint.sh bash -lc "
+    CHROMIUM_PACKAGE_SPEC='chromium' \
+    SELENIUMBASE_SPEC='seleniumbase' \
+    TERMUX_COMPAT_MODE='unmodified-seleniumbase' \
+    bash scripts/init_termux.sh
+  "
 ```
 
 </details>
@@ -63,10 +66,13 @@ docker exec \
 
 ```powershell
 docker exec `
-  -e CHROMIUM_PACKAGE_SPEC="chromium" `
-  -e SELENIUMBASE_SPEC="seleniumbase" `
   $container `
-  /entrypoint.sh bash -lc "bash scripts/init_termux.sh"
+  /entrypoint.sh bash -lc "
+    CHROMIUM_PACKAGE_SPEC='chromium' \
+    SELENIUMBASE_SPEC='seleniumbase' \
+    TERMUX_COMPAT_MODE='unmodified-seleniumbase' \
+    bash scripts/init_termux.sh
+  "
 ```
 
 </details>
