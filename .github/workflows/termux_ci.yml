@@ -26,6 +26,12 @@ jobs:
             seleniumbase_spec: seleniumbase
             compatibility_mode: seleniumbase-with-termux-python-psutil
             seleniumbase_platform_shim: "1"
+          - ci_name: seleniumbase-4.48.4
+            image: termux/termux-docker:x86_64
+            chromium_package: chromium
+            seleniumbase_spec: seleniumbase==4.48.4
+            compatibility_mode: unmodified-seleniumbase
+            seleniumbase_platform_shim: "1"
     name: Verify ${{ matrix.termux_target.ci_name }}
     env:
       TERMUX_IMAGE: ${{ matrix.termux_target.image }}
