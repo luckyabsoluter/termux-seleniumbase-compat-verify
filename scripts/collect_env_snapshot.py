@@ -83,8 +83,8 @@ def main():
             },
         },
         "termux_compat_mode": os.environ.get("TERMUX_COMPAT_MODE"),
-        "seleniumbase_platform_shim_disabled": os.environ.get(
-            "TERMUX_DISABLE_SELENIUMBASE_PLATFORM_SHIM"
+        "seleniumbase_platform_shim_enabled": os.environ.get(
+            "TERMUX_SELENIUMBASE_PLATFORM_SHIM"
         ),
         "pip_freeze": run_command([sys.executable, "-m", "pip", "freeze"]),
         "pip_check": run_command([sys.executable, "-m", "pip", "check"]),

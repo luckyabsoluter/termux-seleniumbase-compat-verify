@@ -19,13 +19,13 @@ jobs:
             seleniumbase_spec: seleniumbase
             ci_name: unmodified-seleniumbase
             compatibility_mode: unmodified-seleniumbase
-            disable_seleniumbase_platform_shim: "1"
+            seleniumbase_platform_shim: "0"
           - image: termux/termux-docker:x86_64
             chromium_package: chromium
             seleniumbase_spec: seleniumbase
             ci_name: seleniumbase-with-termux-python-psutil
             compatibility_mode: seleniumbase-with-termux-python-psutil
-            disable_seleniumbase_platform_shim: "0"
+            seleniumbase_platform_shim: "1"
     name: Verify ${{ matrix.termux_target.ci_name }} / ${{ matrix.termux_target.chromium_package }} / ${{ matrix.termux_target.seleniumbase_spec }}
     env:
       TERMUX_IMAGE: ${{ matrix.termux_target.image }}
@@ -36,7 +36,7 @@ jobs:
       CHROMIUM_PACKAGE_SPEC: ${{ matrix.termux_target.chromium_package }}
       SELENIUMBASE_SPEC: ${{ matrix.termux_target.seleniumbase_spec }}
       TERMUX_COMPAT_MODE: ${{ matrix.termux_target.compatibility_mode }}
-      TERMUX_DISABLE_SELENIUMBASE_PLATFORM_SHIM: ${{ matrix.termux_target.disable_seleniumbase_platform_shim }}
+      TERMUX_SELENIUMBASE_PLATFORM_SHIM: ${{ matrix.termux_target.seleniumbase_platform_shim }}
 
     steps:
       - name: Check out repository
@@ -75,7 +75,7 @@ jobs:
             "$TERMUX_CONTAINER_NAME" \
             /entrypoint.sh bash -lc "
               TERMUX_COMPAT_MODE='$TERMUX_COMPAT_MODE' \
-              TERMUX_DISABLE_SELENIUMBASE_PLATFORM_SHIM='$TERMUX_DISABLE_SELENIUMBASE_PLATFORM_SHIM' \
+              TERMUX_SELENIUMBASE_PLATFORM_SHIM='$TERMUX_SELENIUMBASE_PLATFORM_SHIM' \
               python scripts/verify_version.py"
 
       - name: Collect diagnostics
@@ -87,7 +87,7 @@ jobs:
               "$TERMUX_CONTAINER_NAME" \
               /entrypoint.sh bash -lc '
               TERMUX_COMPAT_MODE="$TERMUX_COMPAT_MODE"
-              TERMUX_DISABLE_SELENIUMBASE_PLATFORM_SHIM="$TERMUX_DISABLE_SELENIUMBASE_PLATFORM_SHIM"
+              TERMUX_SELENIUMBASE_PLATFORM_SHIM="$TERMUX_SELENIUMBASE_PLATFORM_SHIM"
               python scripts/collect_env_snapshot.py --output "$TERMUX_ARTIFACT_DIR/env-snapshot.json" || true'
           fi
 

@@ -124,10 +124,10 @@ contain environment diagnostics if installation fails first.
 
 `scripts/termux_platform_shim.py` contains the SeleniumBase import-time Android
 platform shim. It reports Android as Linux only for SeleniumBase import
-compatibility and can be disabled with:
+compatibility and is disabled by default. Enable it with:
 
 ```bash
-export TERMUX_DISABLE_SELENIUMBASE_PLATFORM_SHIM=1
+export TERMUX_SELENIUMBASE_PLATFORM_SHIM=1
 ```
 
 ## Local Reproduction
