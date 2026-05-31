@@ -1,4 +1,4 @@
-from termux_platform_shim import apply_seleniumbase_platform_shim
+from .termux_platform_shim import apply_seleniumbase_platform_shim
 
 
 apply_seleniumbase_platform_shim()

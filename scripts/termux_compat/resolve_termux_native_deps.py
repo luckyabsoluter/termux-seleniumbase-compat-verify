@@ -151,7 +151,7 @@ def write_summary(summary_path, summary):
 
 
 def parse_args():
-    repo_root = Path(__file__).resolve().parents[1]
+    repo_root = Path(__file__).resolve().parents[2]
     artifact_dir = default_artifact_dir(repo_root)
 
     parser = argparse.ArgumentParser(

@@ -67,7 +67,7 @@ jobs:
             "$TERMUX_CONTAINER_NAME" \
             /entrypoint.sh bash -lc "
               PATCHES_JSON='$PATCHES_JSON' \
-              python scripts/verify_version.py"
+              python scripts/main.py verify-version"
 
       - name: Collect diagnostics
         if: always()
@@ -76,9 +76,9 @@ jobs:
             docker exec \
               -w "$TERMUX_PROJECT_DIR" \
               "$TERMUX_CONTAINER_NAME" \
-              /entrypoint.sh bash -lc '
-              PATCHES_JSON="$PATCHES_JSON"
-              python scripts/collect_env_snapshot.py --output "$TERMUX_ARTIFACT_DIR/env-snapshot.json" || true'
+              /entrypoint.sh bash -lc "
+              PATCHES_JSON='$PATCHES_JSON'
+              python scripts/main.py collect-env-snapshot --output '$TERMUX_ARTIFACT_DIR/env-snapshot.json' || true"
           fi
 
       - name: Copy diagnostics artifacts

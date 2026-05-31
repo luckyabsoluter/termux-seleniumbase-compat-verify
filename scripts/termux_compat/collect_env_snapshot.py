@@ -59,7 +59,7 @@ def find_chromium():
 
 
 def default_output_path():
-    repo_root = Path(__file__).resolve().parents[1]
+    repo_root = Path(__file__).resolve().parents[2]
     artifact_dir = Path(os.environ.get("TERMUX_ARTIFACT_DIR", repo_root / "artifacts"))
     return artifact_dir / "env-snapshot.json"
 

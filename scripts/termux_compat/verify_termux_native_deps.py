@@ -8,7 +8,7 @@ import sys
 
 
 def default_summary_path():
-    repo_root = Path(__file__).resolve().parents[1]
+    repo_root = Path(__file__).resolve().parents[2]
     artifact_dir = Path(os.environ.get("TERMUX_ARTIFACT_DIR", repo_root / "artifacts"))
     return Path(os.environ.get("TERMUX_NATIVE_SUMMARY_PATH", artifact_dir / "termux-native-summary.json"))
 

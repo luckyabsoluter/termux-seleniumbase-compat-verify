@@ -4,8 +4,8 @@ import shutil
 import subprocess
 import sys
 
-from selenium_runner import run_selenium_check
-from seleniumbase_runner import run_seleniumbase_check
+from .selenium_runner import run_selenium_check
+from .seleniumbase_runner import run_seleniumbase_check
 
 
 PACKAGE_NAMES = ["seleniumbase", "selenium", "psutil"]
@@ -70,7 +70,7 @@ def emit_versions():
     return chromium_path, chromedriver_path
 
 
-if __name__ == "__main__":
+def main():
     chromium_binary, chromedriver_binary = emit_versions()
     try:
         run_seleniumbase_check(chromium_binary)
@@ -87,3 +87,7 @@ if __name__ == "__main__":
     except Exception as exc:
         print(f"Selenium verification failed: {exc}", file=sys.stderr)
         sys.exit(1)
+
+
+if __name__ == "__main__":
+    main()
