@@ -14,16 +14,16 @@ jobs:
       fail-fast: false
       matrix:
         termux_target:
-          - image: termux/termux-docker:x86_64
+          - ci_name: unmodified-seleniumbase
+            image: termux/termux-docker:x86_64
             chromium_package: chromium
             seleniumbase_spec: seleniumbase
-            ci_name: unmodified-seleniumbase
             compatibility_mode: unmodified-seleniumbase
             seleniumbase_platform_shim: "0"
-          - image: termux/termux-docker:x86_64
+          - ci_name: seleniumbase-with-termux-python-psutil
+            image: termux/termux-docker:x86_64
             chromium_package: chromium
             seleniumbase_spec: seleniumbase
-            ci_name: seleniumbase-with-termux-python-psutil
             compatibility_mode: seleniumbase-with-termux-python-psutil
             seleniumbase_platform_shim: "1"
     name: Verify ${{ matrix.termux_target.ci_name }}
