@@ -16,22 +16,13 @@ jobs:
         termux_target:
           - ci_name: unmodified-seleniumbase
             image: termux/termux-docker:x86_64
-            chromium_package: chromium
-            seleniumbase_spec: seleniumbase
-            compatibility_mode: unmodified-seleniumbase
-            seleniumbase_platform_shim: "0"
+            patches: '[]'
           - ci_name: seleniumbase-with-termux-python-psutil
             image: termux/termux-docker:x86_64
-            chromium_package: chromium
-            seleniumbase_spec: seleniumbase
-            compatibility_mode: seleniumbase-with-termux-python-psutil
-            seleniumbase_platform_shim: "1"
+            patches: '["seleniumbase-with-termux-python-psutil", "seleniumbase_platform_shim"]'
           - ci_name: seleniumbase-4.48.4
             image: termux/termux-docker:x86_64
-            chromium_package: chromium
-            seleniumbase_spec: seleniumbase==4.48.4
-            compatibility_mode: unmodified-seleniumbase
-            seleniumbase_platform_shim: "1"
+            patches: '["seleniumbase==4.48.4", "seleniumbase_platform_shim"]'
     name: Verify ${{ matrix.termux_target.ci_name }}
     env:
       TERMUX_IMAGE: ${{ matrix.termux_target.image }}
@@ -39,10 +30,7 @@ jobs:
       TERMUX_PROJECT_DIR: /data/termux-seleniumbase-compat-verify
       TERMUX_ARTIFACT_DIR: /data/termux-seleniumbase-compat-verify/artifacts
       HOST_ARTIFACT_DIR: artifacts
-      CHROMIUM_PACKAGE_SPEC: ${{ matrix.termux_target.chromium_package }}
-      SELENIUMBASE_SPEC: ${{ matrix.termux_target.seleniumbase_spec }}
-      TERMUX_COMPAT_MODE: ${{ matrix.termux_target.compatibility_mode }}
-      TERMUX_SELENIUMBASE_PLATFORM_SHIM: ${{ matrix.termux_target.seleniumbase_platform_shim }}
+      PATCHES_JSON: ${{ matrix.termux_target.patches }}
 
     steps:
       - name: Check out repository
@@ -69,9 +57,7 @@ jobs:
             -w "$TERMUX_PROJECT_DIR" \
             "$TERMUX_CONTAINER_NAME" \
             /entrypoint.sh bash -lc "
-              CHROMIUM_PACKAGE_SPEC='$CHROMIUM_PACKAGE_SPEC' \
-              SELENIUMBASE_SPEC='$SELENIUMBASE_SPEC' \
-              TERMUX_COMPAT_MODE='$TERMUX_COMPAT_MODE' \
+              PATCHES_JSON='$PATCHES_JSON' \
               bash scripts/init_termux.sh"
 
       - name: Verify SeleniumBase and Chromium compatibility
@@ -80,8 +66,7 @@ jobs:
             -w "$TERMUX_PROJECT_DIR" \
             "$TERMUX_CONTAINER_NAME" \
             /entrypoint.sh bash -lc "
-              TERMUX_COMPAT_MODE='$TERMUX_COMPAT_MODE' \
-              TERMUX_SELENIUMBASE_PLATFORM_SHIM='$TERMUX_SELENIUMBASE_PLATFORM_SHIM' \
+              PATCHES_JSON='$PATCHES_JSON' \
               python scripts/verify_version.py"
 
       - name: Collect diagnostics
@@ -92,8 +77,7 @@ jobs:
               -w "$TERMUX_PROJECT_DIR" \
               "$TERMUX_CONTAINER_NAME" \
               /entrypoint.sh bash -lc '
-              TERMUX_COMPAT_MODE="$TERMUX_COMPAT_MODE"
-              TERMUX_SELENIUMBASE_PLATFORM_SHIM="$TERMUX_SELENIUMBASE_PLATFORM_SHIM"
+              PATCHES_JSON="$PATCHES_JSON"
               python scripts/collect_env_snapshot.py --output "$TERMUX_ARTIFACT_DIR/env-snapshot.json" || true'
           fi
 
@@ -109,7 +93,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: termux-diagnostics-${{ matrix.termux_target.ci_name }}-${{ matrix.termux_target.chromium_package }}-${{ matrix.termux_target.seleniumbase_spec }}
+          name: termux-diagnostics-${{ matrix.termux_target.ci_name }}
           path: ${{ env.HOST_ARTIFACT_DIR }}
           if-no-files-found: warn
 

@@ -82,10 +82,7 @@ def main():
                 "pip": shutil.which("pip"),
             },
         },
-        "termux_compat_mode": os.environ.get("TERMUX_COMPAT_MODE"),
-        "seleniumbase_platform_shim_enabled": os.environ.get(
-            "TERMUX_SELENIUMBASE_PLATFORM_SHIM"
-        ),
+        "patches": json.loads(os.environ.get("PATCHES_JSON", "[]")),
         "pip_freeze": run_command([sys.executable, "-m", "pip", "freeze"]),
         "pip_check": run_command([sys.executable, "-m", "pip", "check"]),
         "pkg_list_installed": run_command(["pkg", "list-installed"]),

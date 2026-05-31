@@ -3,34 +3,41 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
-CHROMIUM_PACKAGE_SPEC="${CHROMIUM_PACKAGE_SPEC:-chromium}"
-SELENIUMBASE_SPEC="${SELENIUMBASE_SPEC:-seleniumbase}"
-if [[ -z "${TERMUX_COMPAT_MODE}" ]]; then
-  echo "TERMUX_COMPAT_MODE is not set. Please set it to one of the supported modes." >&2
-  exit 1
-fi
+PATCHES_JSON="${PATCHES_JSON:-[]}"
+
+pkg update -y
+pkg install -y x11-repo
+pkg install -y python
+
+has_patch() {
+  python -c "import os, json, sys; sys.exit(0 if sys.argv[1] in json.loads(os.environ.get('PATCHES_JSON', '[]')) else 1)" "$1"
+}
+
+get_chromium_spec() {
+  python -c "import os, json; print(next((p for p in json.loads(os.environ.get('PATCHES_JSON', '[]')) if p.startswith('chromium')), 'chromium'))"
+}
+
+get_sb_spec() {
+  python -c "import os, json; print(next((p for p in json.loads(os.environ.get('PATCHES_JSON', '[]')) if p.startswith('seleniumbase==')), 'seleniumbase'))"
+}
+
+CHROMIUM_PACKAGE_SPEC="$(get_chromium_spec)"
+SELENIUMBASE_SPEC="$(get_sb_spec)"
 TERMUX_ARTIFACT_DIR="${TERMUX_ARTIFACT_DIR:-${REPO_ROOT}/artifacts}"
 PIP_REPORT_PATH="${PIP_REPORT_PATH:-${TERMUX_ARTIFACT_DIR}/pip-resolve-report.json}"
 TERMUX_NATIVE_PACKAGES_PATH="${TERMUX_NATIVE_PACKAGES_PATH:-${TERMUX_ARTIFACT_DIR}/termux-native-packages.txt}"
 TERMUX_NATIVE_SUMMARY_PATH="${TERMUX_NATIVE_SUMMARY_PATH:-${TERMUX_ARTIFACT_DIR}/termux-native-summary.json}"
 export TERMUX_ARTIFACT_DIR PIP_REPORT_PATH TERMUX_NATIVE_PACKAGES_PATH TERMUX_NATIVE_SUMMARY_PATH
 
-pkg update -y
-pkg install -y x11-repo
-pkg install -y python "${CHROMIUM_PACKAGE_SPEC}"
+pkg install -y "${CHROMIUM_PACKAGE_SPEC}"
 
 mkdir -p "${TERMUX_ARTIFACT_DIR}"
 
-if [[ "${TERMUX_COMPAT_MODE}" == "unmodified-seleniumbase" ]]; then
+if ! has_patch "seleniumbase-with-termux-python-psutil"; then
   python -m pip install -r "${REPO_ROOT}/requirements.txt"
   python -m pip install --upgrade --upgrade-strategy only-if-needed "${SELENIUMBASE_SPEC}"
   python -m pip check
   exit 0
-fi
-
-if [[ "${TERMUX_COMPAT_MODE}" != "seleniumbase-with-termux-python-psutil" ]]; then
-  echo "Unsupported TERMUX_COMPAT_MODE: ${TERMUX_COMPAT_MODE}" >&2
-  exit 2
 fi
 
 python "${SCRIPT_DIR}/resolve_termux_native_deps.py" --manifest-package psutil
