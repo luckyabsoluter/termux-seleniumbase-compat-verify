@@ -26,7 +26,7 @@ jobs:
             ci_name: seleniumbase-with-termux-python-psutil
             compatibility_mode: seleniumbase-with-termux-python-psutil
             seleniumbase_platform_shim: "1"
-    name: Verify ${{ matrix.termux_target.ci_name }} / ${{ matrix.termux_target.chromium_package }} / ${{ matrix.termux_target.seleniumbase_spec }}
+    name: Verify ${{ matrix.termux_target.ci_name }}
     env:
       TERMUX_IMAGE: ${{ matrix.termux_target.image }}
       TERMUX_CONTAINER_NAME: termux-seleniumbase-ci-${{ matrix.termux_target.ci_name }}
