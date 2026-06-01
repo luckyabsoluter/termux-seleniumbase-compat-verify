@@ -8,24 +8,6 @@ upstream dependency does not install or run correctly on Android, this project
 adds a documented Termux-native compatibility rule instead of pinning
 SeleniumBase to an older version.
 
-## Layout
-
-```text
-.
-├── .github/workflows/termux_ci.yml
-├── compat/termux_native_packages.toml
-├── requirements.txt
-├── scripts/classify_failure.py
-├── scripts/collect_env_snapshot.py
-├── scripts/create_pip_report.sh
-├── scripts/init_termux.sh
-├── scripts/resolve_termux_native_deps.py
-├── scripts/selenium_runner.py
-├── scripts/seleniumbase_runner.py
-├── scripts/termux_platform_shim.py
-├── scripts/verify_termux_native_deps.py
-└── scripts/verify_version.py
-```
 
 ## Maintenance Policy
 
@@ -52,7 +34,7 @@ can reject Android, while Termux provides a maintained `python-psutil` package.
 The manifest rule maps `psutil` to `python-psutil` and declares the Python
 imports that must be verified after `pkg install`.
 
-The `seleniumbase-with-termux-python-psutil` target explicitly applies the
+The `seleniumbase-with-termux-python-psutil` patch explicitly applies the
 `psutil` manifest rule, installs `python-psutil`, and then generates an
 installed-aware pip dry-run resolver report. Other native replacements should
 be added as explicit compatibility targets instead of applying every manifest
@@ -73,38 +55,25 @@ manifest with:
 
 1. Starts a GitHub Actions job on pushes, pull requests, and the configured
    schedule.
-2. Uses `unmodified-seleniumbase` and
-   `seleniumbase-with-termux-python-psutil` matrix targets to separate the
-   unmodified SeleniumBase install path from the Termux `python-psutil`
-   replacement path.
+2. Uses a matrix of test targets (e.g., unmodified `seleniumbase` vs versions with `python-psutil`).
 3. Uses the matrix-selected Termux Docker image, Chromium package spec,
-   SeleniumBase package spec, and compatibility mode.
+   SeleniumBase package spec, and a JSON array of active patches (`PATCHES_JSON`).
 4. Copies the checked-out project into a writable `/data` directory inside
    the container.
 5. Runs Termux commands through the image entrypoint.
 6. Installs Termux `python`, `x11-repo`, and the matrix-selected Chromium
    package through `pkg`.
-7. The `unmodified-seleniumbase` target installs the selected SeleniumBase spec
-   without Termux-native dependency replacement or the SeleniumBase platform
-   shim.
-8. The `seleniumbase-with-termux-python-psutil` target resolves the `psutil`
-   replacement from
-   `compat/termux_native_packages.toml`.
-9. The `seleniumbase-with-termux-python-psutil` target installs
-    `python-psutil` through Termux and verifies the `psutil` Python import.
-10. The `seleniumbase-with-termux-python-psutil` target generates an
-    installed-aware pip dry-run resolver report for the selected SeleniumBase
-    spec.
+7. Subcommands of `scripts/main.py` handle all package resolutions and runtime checks.
+8. If the `"seleniumbase-with-termux-python-psutil"` patch is active, it resolves the `psutil`
+   replacement from `compat/termux_native_packages.toml`.
+9. If applicable, it installs `python-psutil` through Termux and verifies the `psutil` Python import.
+10. Generates an installed-aware pip dry-run resolver report for the selected SeleniumBase spec.
 11. Installs shared Python dependencies from `requirements.txt`.
-12. Installs the selected SeleniumBase spec with pip dependency resolution still
-    enabled.
+12. Installs the selected SeleniumBase spec with pip dependency resolution still enabled.
 13. Runs `python -m pip check`.
-14. Prints Chromium, ChromeDriver, SeleniumBase, Selenium, and psutil version
-    details.
-15. Launches Chromium through SeleniumBase and through direct Selenium
-    WebDriver paths.
-16. Collects diagnostics artifacts even when initialization or verification
-    fails.
+14. Prints Chromium, ChromeDriver, SeleniumBase, Selenium, and psutil version details.
+15. Launches Chromium through SeleniumBase and through direct Selenium WebDriver paths using `python scripts/main.py verify-version`.
+16. Collects diagnostics artifacts even when initialization or verification fails.
 
 ## Diagnostics Artifacts
 
@@ -115,19 +84,20 @@ CI uploads the `artifacts` directory after each run. Important files include:
 - `termux-native-summary.json`
 - `env-snapshot.json`
 
-The resolver and Termux-native package artifacts are produced by the
-`seleniumbase-with-termux-python-psutil` target. The
-`unmodified-seleniumbase` target is intentionally unmodified and may only
-contain environment diagnostics if installation fails first.
+The resolver and Termux-native package artifacts are produced by the patches like
+`seleniumbase-with-termux-python-psutil`. The `unmodified-seleniumbase` target is
+intentionally unmodified and may only contain environment diagnostics if installation fails first.
 
 ## Runtime Platform Shim
 
-`scripts/termux_platform_shim.py` contains the SeleniumBase import-time Android
+`scripts/termux_compat/termux_platform_shim.py` contains the SeleniumBase import-time Android
 platform shim. It reports Android as Linux only for SeleniumBase import
-compatibility and is disabled by default. Enable it with:
+compatibility and is disabled by default. 
+
+To enable it, ensure `"seleniumbase_platform_shim"` is included in the `PATCHES_JSON` array when running tests, or export it in your shell if running manually:
 
 ```bash
-export TERMUX_SELENIUMBASE_PLATFORM_SHIM=1
+export PATCHES_JSON='["seleniumbase_platform_shim"]'
 ```
 
 ## Local Reproduction
@@ -135,6 +105,8 @@ export TERMUX_SELENIUMBASE_PLATFORM_SHIM=1
 Local Docker reproduction commands are documented in
 [`docs/local-reproduction.md`](docs/local-reproduction.md), including artifact
 inspection steps for dependency resolution and environment diagnostics.
+
+For **AI Agents** or rapid manual testing that bypasses the long `pkg install` process, refer to the skill documentation at [`skills/manual-docker-testing/SKILL.md`](skills/manual-docker-testing/SKILL.md).
 
 ## Notes
 

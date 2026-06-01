@@ -52,9 +52,7 @@ docker run -d `
 docker exec \
   "$container" \
   /entrypoint.sh bash -lc "
-    CHROMIUM_PACKAGE_SPEC='chromium' \
-    SELENIUMBASE_SPEC='seleniumbase' \
-    TERMUX_COMPAT_MODE='unmodified-seleniumbase' \
+    PATCHES_JSON='[]' \
     bash scripts/init_termux.sh
   "
 ```
@@ -68,14 +66,14 @@ docker exec \
 docker exec `
   $container `
   /entrypoint.sh bash -lc "
-    CHROMIUM_PACKAGE_SPEC='chromium' \
-    SELENIUMBASE_SPEC='seleniumbase' \
-    TERMUX_COMPAT_MODE='unmodified-seleniumbase' \
+    PATCHES_JSON='[]' \
     bash scripts/init_termux.sh
   "
 ```
 
 </details>
+
+*(Note: Change `PATCHES_JSON` to `'["seleniumbase-with-termux-python-psutil"]'` if you want to test the patched behavior instead of the unmodified baseline.)*
 
 ## Run the verification script
 
@@ -85,7 +83,7 @@ docker exec `
 ```bash
 docker exec \
   "$container" \
-  /entrypoint.sh bash -lc "python scripts/verify_version.py"
+  /entrypoint.sh bash -lc "PATCHES_JSON='[]' python scripts/main.py verify-version"
 ```
 
 </details>
@@ -96,7 +94,7 @@ docker exec \
 ```powershell
 docker exec `
   $container `
-  /entrypoint.sh bash -lc "python scripts/verify_version.py"
+  /entrypoint.sh bash -lc "PATCHES_JSON='[]' python scripts/main.py verify-version"
 ```
 
 </details>

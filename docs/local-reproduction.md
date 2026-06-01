@@ -12,6 +12,9 @@ For an interactive local workflow that keeps the container running and lets you
 inspect or modify the Termux environment interactively, see
 [`docs/local-interactive-workflow.md`](local-interactive-workflow.md).
 
+For AI Agents or rapid manual iterative testing without rebuilding the container, see
+[`skills/manual-docker-testing/SKILL.md`](../skills/manual-docker-testing/SKILL.md).
+
 ## Direct bind mount
 
 This is the simpler local flow. It mounts the current project into `/app` and
@@ -22,12 +25,10 @@ local `artifacts` directory.
 docker run --rm \
   -v "$PWD:/app" \
   -w /app \
-  -e CHROMIUM_PACKAGE_SPEC="chromium" \
-  -e SELENIUMBASE_SPEC="seleniumbase" \
-  -e TERMUX_COMPAT_MODE="seleniumbase-with-termux-python-psutil" \
+  -e PATCHES_JSON='["seleniumbase-with-termux-python-psutil"]' \
   -e TERMUX_ARTIFACT_DIR="/app/artifacts" \
   termux/termux-docker:x86_64 \
-  bash -lc 'mkdir -p "$TERMUX_ARTIFACT_DIR"; bash scripts/init_termux.sh && python scripts/verify_version.py; status=$?; python scripts/collect_env_snapshot.py --output "$TERMUX_ARTIFACT_DIR/env-snapshot.json" || true; exit $status'
+  bash -lc 'mkdir -p "$TERMUX_ARTIFACT_DIR"; bash scripts/init_termux.sh && python scripts/main.py verify-version; status=$?; python scripts/main.py collect-env-snapshot --output "$TERMUX_ARTIFACT_DIR/env-snapshot.json" || true; exit $status'
 ```
 
 ## Writable project copy
@@ -41,17 +42,12 @@ inside the project.
 docker run --rm \
   -v "$PWD:/app" \
   -w /app \
-  -e CHROMIUM_PACKAGE_SPEC="chromium" \
-  -e SELENIUMBASE_SPEC="seleniumbase" \
-  -e TERMUX_COMPAT_MODE="seleniumbase-with-termux-python-psutil" \
+  -e PATCHES_JSON='["seleniumbase-with-termux-python-psutil", "seleniumbase_platform_shim"]' \
   termux/termux-docker:x86_64 \
-  bash -lc 'project_dir="/data/termux-seleniumbase-compat-verify"; artifact_dir="$project_dir/artifacts"; rm -rf "$project_dir"; mkdir -p "$project_dir"; cp -a /app/. "$project_dir"; chown -R system:system "$project_dir"; /entrypoint.sh bash -lc "cd /data/termux-seleniumbase-compat-verify && export TERMUX_COMPAT_MODE=seleniumbase-with-termux-python-psutil && export TERMUX_SELENIUMBASE_PLATFORM_SHIM=1 && export TERMUX_ARTIFACT_DIR=/data/termux-seleniumbase-compat-verify/artifacts && mkdir -p \"\$TERMUX_ARTIFACT_DIR\"; bash scripts/init_termux.sh && python scripts/verify_version.py"; status=$?; /entrypoint.sh bash -lc "cd /data/termux-seleniumbase-compat-verify && export TERMUX_COMPAT_MODE=seleniumbase-with-termux-python-psutil && export TERMUX_SELENIUMBASE_PLATFORM_SHIM=1 && export TERMUX_ARTIFACT_DIR=/data/termux-seleniumbase-compat-verify/artifacts && python scripts/collect_env_snapshot.py --output \"\$TERMUX_ARTIFACT_DIR/env-snapshot.json\" || true"; cp -a "$artifact_dir" /app/artifacts || true; exit $status'
+  bash -lc 'project_dir="/data/termux-seleniumbase-compat-verify"; artifact_dir="$project_dir/artifacts"; rm -rf "$project_dir"; mkdir -p "$project_dir"; cp -a /app/. "$project_dir"; chown -R system:system "$project_dir"; /entrypoint.sh bash -lc "cd /data/termux-seleniumbase-compat-verify && export PATCHES_JSON='\''[\"seleniumbase-with-termux-python-psutil\", \"seleniumbase_platform_shim\"]'\'' && export TERMUX_ARTIFACT_DIR=/data/termux-seleniumbase-compat-verify/artifacts && mkdir -p \"\$TERMUX_ARTIFACT_DIR\"; bash scripts/init_termux.sh && python scripts/main.py verify-version"; status=$?; /entrypoint.sh bash -lc "cd /data/termux-seleniumbase-compat-verify && export PATCHES_JSON='\''[\"seleniumbase-with-termux-python-psutil\", \"seleniumbase_platform_shim\"]'\'' && export TERMUX_ARTIFACT_DIR=/data/termux-seleniumbase-compat-verify/artifacts && python scripts/main.py collect-env-snapshot --output \"\$TERMUX_ARTIFACT_DIR/env-snapshot.json\" || true"; cp -a "$artifact_dir" /app/artifacts || true; exit $status'
 ```
 
-Set `TERMUX_COMPAT_MODE=unmodified-seleniumbase` and
-`TERMUX_SELENIUMBASE_PLATFORM_SHIM=0` (or leave it unset) to reproduce the
-`unmodified-seleniumbase` matrix target without Termux-native dependency
-replacement or the SeleniumBase platform shim.
+To run the baseline unmodified verification, leave `PATCHES_JSON` unset or set it to `'[]'`. This reproduces the `unmodified-seleniumbase` target without Termux-native dependency replacement or the SeleniumBase platform shim.
 
 ## Artifact inspection
 
