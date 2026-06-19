@@ -34,7 +34,7 @@ jobs:
 
     steps:
       - name: Check out repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Start Termux Docker container
         run: |
@@ -91,7 +91,7 @@ jobs:
 
       - name: Upload diagnostics artifacts
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: termux-diagnostics-${{ matrix.termux_target.ci_name }}
           path: ${{ env.HOST_ARTIFACT_DIR }}
